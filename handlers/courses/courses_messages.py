@@ -1,9 +1,8 @@
 from aiogram import F, Router
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from forms.course_form import CourseInfo, CourseDeleteInfo
-from paginator.paginator import AiogramPaginator
 
 from keyboards.reply import build_courses_manager_menu, build_menu_kb, build_admin_menu_kb
 from constats import DB, BOT
@@ -15,28 +14,70 @@ db = DB
 bot = BOT
 
 @router.message(F.text == "Просмотреть курсы")
-async def send_courses_with_interest(message: Message):
-    user_id = message.from_user.id
+async def view_courses(message: Message):
+    user_id = int(message.from_user.id)
+    interest = await db.get_user_interests(user_id=user_id)
+    page = 1
+    page_size = 1
 
-    admin_kb = await build_admin_menu_kb()
-    menu_kb = await build_menu_kb()
-    
-    current_interests = await db.get_user_interests(user_id=user_id)
-    current_courses = await db.get_courses_by_interest(interest=current_interests)
+    try:
+        courses, navigation = await db.get_courses_by_interest_paginated(interest, page, page_size)
 
-    print(current_courses)
+        if courses:
+            message_text = "Курсы по вашему интересу:\n"
+            for course in courses:
+                message_text += f"📚 *{course['name']}*\n[Перейти]({course['url']})\n\n"
 
-    if current_courses:
-        courses_text = "\n\n".join([f"'*{course['name']}*'\n*{course['description']}*\n[Ссылка на курс]({course['url']})\n\n(id = {course['id']})" 
-                                   for course in current_courses])
-    else:
-        courses_text = "Курсы по вашему запросу не найдены."
-    
-    await message.answer(
-        courses_text, 
-        parse_mode="MARKDOWN", 
-        reply_markup=admin_kb if user_id in LIST_OF_ADMINS else menu_kb
-    )
+            buttons = []
+            if navigation.get('has_previous'):
+                buttons.append(InlineKeyboardButton(text="⬅️", callback_data=f"page:{navigation['previous_page']}"))
+
+            if navigation.get('has_next'):
+                buttons.append(InlineKeyboardButton(text="➡️", callback_data=f"page:{navigation['next_page']}"))
+
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[buttons])
+
+            await message.answer(message_text, reply_markup=keyboard, parse_mode="MARKDOWN")
+        else:
+            await message.answer("Курсы не найдены по вашему интересу.")
+
+    except Exception as e:
+        raise e
+
+
+@router.callback_query(lambda c: c.data.startswith("page:"))
+async def handle_pagination(callback_query: CallbackQuery):
+    page = int(callback_query.data.split(":")[1])
+    user_id = int(callback_query.from_user.id)
+    interest = await db.get_user_interests(user_id=user_id)
+    page_size = 1
+
+    try:
+        courses, navigation = await db.get_courses_by_interest_paginated(interest=interest, page=page, page_size=page_size)
+        
+        if courses:
+            message_text = "Курсы по вашему интересу:\n"
+            for course in courses:
+                message_text += f"📚 *{course['name']}*\n[Перейти]({course['url']})\n\n"
+            
+            buttons = []
+            if navigation['has_previous']:
+                buttons.append(
+                    InlineKeyboardButton(text="⬅️", callback_data=f"page:{navigation['previous_page']}")
+                )
+            if navigation['has_next']:
+                buttons.append(
+                    InlineKeyboardButton(text="➡️", callback_data=f"page:{navigation['next_page']}")
+                )
+            
+            keyboard = InlineKeyboardMarkup(inline_keyboard=[buttons])
+
+            await callback_query.message.edit_text(message_text, reply_markup=keyboard, parse_mode="Markdown")
+        else:
+            await callback_query.answer("Курсы не найдены по вашему интересу.")
+    except Exception as e:
+        await callback_query.answer("Произошла ошибка при получении курсов.")
+        print(f"Ошибка: {e}")
 
 
 
@@ -93,9 +134,12 @@ async def process_add_course(message: Message, state: FSMContext):
 
     users_in_interest = await db.get_users_by_interest(interest=interest)
 
+    menu_kb = await build_menu_kb()
+
     if not is_course_exists:
         await db.add_course(name=name, interest=interest, url=url, description=description)
-        await message.answer(f"Успех!\nКурс '{name}' добавлен!\n\n")
+        await message.answer(f"Успех!\nКурс '{name}' добавлен!\n\n",
+                             reply_markup=menu_kb)
 
         for user in users_in_interest:
             user_id = user['id']

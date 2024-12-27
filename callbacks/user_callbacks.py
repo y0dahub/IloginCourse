@@ -2,11 +2,13 @@ from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, F
 
+
 from keyboards.reply import build_menu_kb
 from constats import DB
 
 router = Router()
 db = DB
+
 
 @router.callback_query(F.data.startswith("lang_"))
 async def get_interesting_lang(callback: CallbackQuery, state: FSMContext):

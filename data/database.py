@@ -5,7 +5,9 @@ from config import CREATE_QUERY_USERS, CREATE_QUERY_COURSES, \
     QUERY_GET_COURSES_BY_INTEREST_STRING, QUERY_GET_COURSES_BY_INTEREST_LIST, \
     QUERY_GET_COURSE_BY_ID, QUERY_GET_USERS_BY_INTEREST, QUERY_GET_ALL_COURSES_STRING, \
     QUERY_GET_ALL_COURSES_LIST
-    
+
+from paginator.paginator import Paginator
+
 import asyncpg
 
 
@@ -118,6 +120,14 @@ class Database:
         except Exception as _err:
             raise _err
 
+    async def get_courses_by_interest_paginated(self, interest: str | list[str], page: int, page_size: int):
+        courses = await self.get_courses_by_interest(interest)
+        
+        paginator = Paginator(courses, page_size)
+        paginated_courses = paginator.get_page(page)
+        navigation = paginator.get_navigation(page)
+        
+        return paginated_courses, navigation
 
     
     async def add_interest(self, user_id: int, new_interest: str):
