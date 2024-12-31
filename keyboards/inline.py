@@ -6,11 +6,11 @@ async def build_languages_kb():
     
 
     languages_kb.row(
-        InlineKeyboardButton(text="Python", callback_data="lang_python"),
-        InlineKeyboardButton(text="C++", callback_data="lang_cpp"),
-        InlineKeyboardButton(text="Java", callback_data="lang_java"),
-        InlineKeyboardButton(text="Go", callback_data="lang_go"),
-        InlineKeyboardButton(text="Kotlin", callback_data="lang_kotlin"),
+        InlineKeyboardButton(text="Python: 🐍✨", callback_data="lang_python"),
+        InlineKeyboardButton(text="C++: 💻🔧", callback_data="lang_cpp"),
+        InlineKeyboardButton(text="Kotlin: ☕️📱", callback_data="lang_java"),
+        InlineKeyboardButton(text="Java: ☕️🌍", callback_data="lang_go"),
+        InlineKeyboardButton(text="Go: 🐹🚀", callback_data="lang_kotlin"),
         width=2
     )
 

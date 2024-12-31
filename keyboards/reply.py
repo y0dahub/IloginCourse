@@ -4,7 +4,8 @@ async def build_menu_kb():
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="Просмотреть курсы")],
-            [KeyboardButton(text="Редактировать интересы")]
+            [KeyboardButton(text="Редактировать интересы")],
+            [KeyboardButton(text="Главное меню")]
         ],
         resize_keyboard=True
     )
@@ -13,7 +14,8 @@ async def build_interests_kb():
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="Добавить интерес")],
-            [KeyboardButton(text="Удалить интерес")]
+            [KeyboardButton(text="Удалить интерес")],
+            [KeyboardButton(text="Главное меню")],
         ],
         resize_keyboard=True,
         one_time_keyboard=True
@@ -25,8 +27,7 @@ async def build_admin_menu_kb():
         keyboard=[
             [KeyboardButton(text="Просмотреть курсы")],
             [KeyboardButton(text="Редактировать интересы")],
-            [KeyboardButton(text="Упраление курсами")],
-            [KeyboardButton(text="Главное меню")],
+            [KeyboardButton(text="Упраление курсами")]
         ],
         resize_keyboard=True
     )
@@ -36,7 +37,7 @@ async def build_courses_manager_menu():
         keyboard=[
             [KeyboardButton(text="Добавить курс")],
             [KeyboardButton(text="Удалить курс")],
-            [KeyboardButton(text="Редактировать курс")]
+            [KeyboardButton(text="Главное меню")]
         ],
         resize_keyboard=True
     )

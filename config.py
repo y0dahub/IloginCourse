@@ -11,7 +11,7 @@ DB_DATA = {
     "database_name": getenv("DB_NAME")
 }
 
-LIST_OF_ADMINS = [7138248711]
+LIST_OF_ADMINS = [7138248711, 6863440266]
 
 
 CREATE_QUERY_USERS = """

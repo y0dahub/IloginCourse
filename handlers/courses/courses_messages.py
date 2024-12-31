@@ -4,10 +4,9 @@ from aiogram.fsm.context import FSMContext
 
 from forms.course_form import CourseInfo, CourseDeleteInfo
 
-from keyboards.reply import build_courses_manager_menu, build_menu_kb, build_admin_menu_kb
+from keyboards.reply import build_courses_manager_menu, build_menu_kb
 from constats import DB, BOT
 
-from config import LIST_OF_ADMINS
 
 router = Router()
 db = DB
@@ -19,6 +18,7 @@ async def view_courses(message: Message):
     interest = await db.get_user_interests(user_id=user_id)
     page = 1
     page_size = 1
+
 
     try:
         courses, navigation = await db.get_courses_by_interest_paginated(interest, page, page_size)
@@ -58,7 +58,7 @@ async def handle_pagination(callback_query: CallbackQuery):
         if courses:
             message_text = "Курсы по вашему интересу:\n"
             for course in courses:
-                message_text += f"📚 *{course['name']}*\n[Перейти]({course['url']})\n\n"
+                message_text += f"📚 *{course['name']}*\n*{course['description']}*\n\n[Перейти]({course['url']})\n\n"
             
             buttons = []
             if navigation['has_previous']:
