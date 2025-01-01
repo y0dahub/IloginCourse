@@ -7,6 +7,7 @@ from forms.course_form import CourseInfo, CourseDeleteInfo
 from keyboards.reply import build_courses_manager_menu, build_menu_kb
 from constats import DB, BOT
 
+import re
 
 router = Router()
 db = DB
@@ -109,15 +110,21 @@ async def process_course_interest(message: Message, state: FSMContext):
 
 @router.message(CourseInfo.url)
 async def process_course_url(message: Message, state: FSMContext):
-    url = message.text
+    url = message.text.strip()
 
-    if url.startswith("http://"):
-        await message.answer("Некорректный URL.\n URL должен начинаться с httpS")
-        return
+    url_pattern = re.compile(
+        r"^https://[a-zA-Z0-9.-]+(?:\.[a-zA-Z]{2,})?(?:/.*)?$"
+    )
 
-    await state.update_data({"url": url})
-    await message.answer("Теперь введи описание курса.")
-    await state.set_state(CourseInfo.description)
+    if url_pattern.match(url):
+        await state.update_data({"url": url})
+        await message.answer("Теперь введи описание курса.")
+        await state.set_state(CourseInfo.description)
+    else:
+        await message.answer(
+            "Некорректный URL.\n"
+            "Пожалуйста, убедитесь, что ваш URL начинается с https:// и является корректным веб-адресом."
+        )
 
 @router.message(CourseInfo.description)
 async def process_add_course(message: Message, state: FSMContext):
@@ -143,7 +150,8 @@ async def process_add_course(message: Message, state: FSMContext):
 
         for user in users_in_interest:
             user_id = user['id']
-            await bot.send_message(user_id, f"Новый курс по интересу '{interest}':\n*{name}\n{description}\n[Ссылка на курс]({url})",
+            await bot.send_message(user_id, 
+                                   f"Новый курс по интересу `{interest}`: *{name}*\n\n[Перейти]({url})",
                                    parse_mode="MARKDOWN")
 
     else:
