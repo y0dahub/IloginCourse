@@ -48,7 +48,7 @@ async def greeting(message: Message, state: FSMContext):
 @router.message(Command("find"))
 async def find(message: Message):
     try:
-        interest = message.text.split(" ")[1]
+        interest = message.text.split(" ")[1].lower()
         page = 1
         page_size = 1
 
@@ -74,10 +74,8 @@ async def find(message: Message):
         else:
             await message.answer(f"Интерес '{interest}' не найден.")
 
-    except Exception as e:
-        print(f"Ошибка: {e}")
-        await message.answer("Произошла ошибка при поиске курсов.")
-
+    except ValueError as e:
+       await message.answer("По вашей категории не найдено курсов. Наша система автоматические уповестит вас о новых курсах.")
 
 @router.callback_query(lambda c: c.data.startswith("find_page:"))
 async def handle_find_pagination(callback_query: CallbackQuery):

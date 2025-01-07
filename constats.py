@@ -11,4 +11,4 @@ DB = Database(user=DB_DATA.get("user"),
               host=DB_DATA.get("host"),
               database_name=DB_DATA.get("database_name"))
 
-INTERESTS = ["python", "c++", "java", "kotlin", "go"]
+INTERESTS = ["python", "c++", "java", "kotlin", "go", "front end", "c#"]

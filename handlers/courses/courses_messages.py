@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from forms.course_form import CourseInfo, CourseDeleteInfo
 
 from keyboards.reply import build_courses_manager_menu, build_menu_kb
-from constats import DB, BOT
+from constats import DB, BOT, INTERESTS
 
 import re
 
@@ -78,7 +78,6 @@ async def handle_pagination(callback_query: CallbackQuery):
             await callback_query.answer("Курсы не найдены по вашему интересу.")
     except Exception as e:
         await callback_query.answer("Произошла ошибка при получении курсов.")
-        print(f"Ошибка: {e}")
 
 
 
@@ -104,9 +103,12 @@ async def process_course_name(message: Message, state: FSMContext):
 
 @router.message(CourseInfo.interest)
 async def process_course_interest(message: Message, state: FSMContext):
-    await state.update_data({"interest": message.text})
-    await message.answer("Теперь введи URL")
-    await state.set_state(CourseInfo.url)
+    if message.text.lower().strip() in INTERESTS:
+        await state.update_data({"interest": message.text})
+        await message.answer("Теперь введи URL")
+        await state.set_state(CourseInfo.url)
+    else:
+        await message.answer(f"Введи существующую категорию. \n\n{INTERESTS}")
 
 @router.message(CourseInfo.url)
 async def process_course_url(message: Message, state: FSMContext):
@@ -151,7 +153,7 @@ async def process_add_course(message: Message, state: FSMContext):
         for user in users_in_interest:
             user_id = user['id']
             await bot.send_message(user_id, 
-                                   f"Новый курс по интересу `{interest}`: *{name}*\n\n[Перейти]({url})",
+                                   f"*Новый курс!*\n`{interest}`\n*{name}*\n\n[Перейти]({url})",
                                    parse_mode="MARKDOWN")
 
     else:
